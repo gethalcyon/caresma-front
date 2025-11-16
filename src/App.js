@@ -1,23 +1,32 @@
-import logo from './logo.svg';
 import './App.css';
+import { useState } from 'react';
 
 function App() {
+  const [sessionStarted, setSessionStarted] = useState(false);
+
+  const handleStartSession = () => {
+    setSessionStarted(true);
+    console.log('Session started!');
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="container">
+        <div className="avatar-container">
+          <div className="avatar-placeholder">
+            <p>Avatar will appear here</p>
+          </div>
+        </div>
+
+        <div className="controls-container">
+          <button
+            className="start-session-btn"
+            onClick={handleStartSession}
+          >
+            {sessionStarted ? 'Session Active' : 'Start Session'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
