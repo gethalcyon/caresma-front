@@ -126,14 +126,16 @@ export function useHeygenAvatar(shouldInitialize = false) {
     }
 
     try {
-      console.log('📢 Avatar speaking:', text.substring(0, 50) + '...');
+      console.log('📢 Avatar speaking:', text.substring(0, 100) + (text.length > 100 ? '...' : ''));
       await avatarRef.current.speak({
         text,
-        taskType: "talk", // or "repeat" for exact text without LLM processing
+        taskType: "repeat", // Use "repeat" to speak exact text without LLM processing
       });
+      console.log('✅ Avatar speak command sent successfully');
       return true;
     } catch (error) {
       console.error('❌ Error making avatar speak:', error);
+      setError(error.message || 'Failed to make avatar speak');
       return false;
     }
   }, [ready]);
