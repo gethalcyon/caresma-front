@@ -109,94 +109,99 @@ function App() {
 
   return (
     <div className="App">
+      {/* Cleanup Button - Top Left */}
+      {!sessionStarted && (
+        <button
+          className="cleanup-btn-topleft"
+          onClick={handleCleanupSessions}
+          disabled={!!cleanupStatus}
+        >
+          🧹 Clean Sessions
+        </button>
+      )}
+
       <div className="container">
-        {/* Avatar Video Section */}
-        <div className="avatar-container">
-          {sessionStarted ? (
-            <div className="video-wrapper">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                className="avatar-video"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '12px',
-                }}
-              />
-              {avatarLoading && (
-                <div className="loading-overlay">
-                  <div className="spinner"></div>
-                  <p>Loading avatar...</p>
-                </div>
-              )}
-              {avatarError && (
-                <div className="error-overlay">
-                  <p>❌ {avatarError}</p>
-                  <button onClick={handleEndSession}>Retry</button>
-                </div>
-              )}
+        {/* Main content area with avatar and conversation side by side */}
+        <div className="main-content">
+          {/* Avatar Video Section */}
+          <div className="avatar-container">
+            {sessionStarted ? (
+              <div className="video-wrapper">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="avatar-video"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '12px',
+                  }}
+                />
+                {avatarLoading && (
+                  <div className="loading-overlay">
+                    <div className="spinner"></div>
+                    <p>Loading avatar...</p>
+                  </div>
+                )}
+                {avatarError && (
+                  <div className="error-overlay">
+                    <p>❌ {avatarError}</p>
+                    <button onClick={handleEndSession}>Retry</button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="avatar-placeholder">
+                <h2>Welcome to Caresma</h2>
+              </div>
+            )}
+
+            <div className="status-indicator">
+              <span className={`status-dot ${connected && avatarReady ? 'connected' : ''} ${isSpeaking ? 'speaking' : ''}`}></span>
+              <span className="status-text">{getStatus()}</span>
             </div>
-          ) : (
-            <div className="avatar-placeholder">
-              <h2>Welcome to Caresma</h2>
+          </div>
+
+          {/* Conversation Display */}
+          {sessionStarted && (
+            <div className="conversation-container">
+              <div className="conversation-messages">
+                {userTranscript && (
+                  <div className="message user-message">
+                    <strong>You:</strong>
+                    <p>{userTranscript}</p>
+                  </div>
+                )}
+                {aiResponse && (
+                  <div className="message ai-message">
+                    <strong>Assistant:</strong>
+                    <p>{aiResponse}</p>
+                  </div>
+                )}
+                {!userTranscript && !aiResponse && (
+                  <div className="empty-state">
+                    <p>Click "Start Microphone" and speak naturally.</p>
+                    <p style={{ fontSize: '14px', marginTop: '10px', color: '#999' }}>
+                      The AI will automatically respond when you pause speaking.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
-
-          <div className="status-indicator">
-            <span className={`status-dot ${connected && avatarReady ? 'connected' : ''} ${isSpeaking ? 'speaking' : ''}`}></span>
-            <span className="status-text">{getStatus()}</span>
-          </div>
         </div>
-
-        {/* Conversation Display */}
-        {sessionStarted && (
-          <div className="conversation-container">
-            <div className="conversation-messages">
-              {userTranscript && (
-                <div className="message user-message">
-                  <strong>You:</strong>
-                  <p>{userTranscript}</p>
-                </div>
-              )}
-              {aiResponse && (
-                <div className="message ai-message">
-                  <strong>Assistant:</strong>
-                  <p>{aiResponse}</p>
-                </div>
-              )}
-              {!userTranscript && !aiResponse && (
-                <div className="empty-state">
-                  <p>Click "Start Microphone" and speak naturally.</p>
-                  <p style={{ fontSize: '14px', marginTop: '10px', color: '#999' }}>
-                    The AI will automatically respond when you pause speaking.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Controls */}
         <div className="controls-container">
           {!sessionStarted ? (
-            <>
-              <button
-                className="start-session-btn"
-                onClick={handleStartSession}
-              >
-                Start Session
-              </button>
-              <button
-                className="cleanup-btn"
-                onClick={handleCleanupSessions}
-                disabled={!!cleanupStatus}
-              >
-                🧹 Clean Sessions
-              </button>
-            </>
+            <button
+              className="start-session-btn"
+              onClick={handleStartSession}
+            >
+              Start Session
+            </button>
           ) : (
             <>
               <button
