@@ -1,0 +1,11 @@
+Cognitive Health Assessment - Conversation Transcript
+Date: November 20, 2025
+Duration: 15 minutes
+Participant: Jane Smith (Age 72)
+
+---
+User: Hello I am feeling bad
+assistant: Hello, how do you feel
+User: hm I don't now hm
+assistant: Hello?
+User: I dont know
