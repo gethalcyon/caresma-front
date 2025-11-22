@@ -9,8 +9,8 @@ function Home() {
   const [aiResponse, setAiResponse] = useState('');
   const [cleanupStatus, setCleanupStatus] = useState('');
 
-  // Generate session ID
-  const [sessionId] = useState(() => `session-${Date.now()}`);
+  // Session ID - let backend generate the UUID
+  const [sessionId, setSessionId] = useState('new');
 
   // Initialize HeyGen avatar only when session starts
   const {
@@ -32,6 +32,7 @@ function Home() {
     stopRecording,
     setOnTextResponse,
     setOnTranscript,
+    setOnSessionCreated,
   } = useOpenAIWebSocket(sessionStarted ? sessionId : null);
 
   // Handle text responses from OpenAI -> Send to avatar
@@ -50,6 +51,14 @@ function Home() {
       setUserTranscript(text);
     });
   }, [setOnTranscript]);
+
+  // Handle session creation from backend
+  useEffect(() => {
+    setOnSessionCreated((newSessionId) => {
+      console.log('🆔 Session ID received from backend:', newSessionId);
+      setSessionId(newSessionId);
+    });
+  }, [setOnSessionCreated]);
 
   // Handle session start
   const handleStartSession = () => {

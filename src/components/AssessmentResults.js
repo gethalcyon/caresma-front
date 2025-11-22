@@ -76,8 +76,8 @@ function AssessmentResults({ assessment, onBack }) {
               <div
                 className="risk-badge"
                 style={{
-                  backgroundColor: `${getRiskLevelColor(assessment.risk_level)}20`,
-                  color: getRiskLevelColor(assessment.risk_level),
+                  backgroundColor: getRiskLevelColor(assessment.risk_level),
+                  color: 'white',
                 }}
               >
                 Risk Level: {assessment.risk_level.toUpperCase()}

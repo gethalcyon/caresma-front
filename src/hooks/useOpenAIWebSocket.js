@@ -17,6 +17,7 @@ export function useOpenAIWebSocket(sessionId) {
   // Callbacks
   const onTextResponseRef = useRef(null);
   const onTranscriptRef = useRef(null);
+  const onSessionCreatedRef = useRef(null);
 
   // Initialize WebSocket connection
   useEffect(() => {
@@ -49,6 +50,10 @@ export function useOpenAIWebSocket(sessionId) {
           setStatus('Recording...');
         } else if (data.type === 'recording_stopped') {
           setStatus('Processing...');
+        } else if (data.type === 'session_created') {
+          // Backend generated a new session UUID
+          console.log('🆔 Session created:', data.session_id);
+          onSessionCreatedRef.current?.(data.session_id);
         } else if (data.type === 'error') {
           console.error('❌ Backend error:', data.message);
           setStatus(`Error: ${data.message}`);
@@ -193,6 +198,13 @@ export function useOpenAIWebSocket(sessionId) {
     onTranscriptRef.current = callback;
   }, []);
 
+  /**
+   * Set callback for when session is created by backend
+   */
+  const setOnSessionCreated = useCallback((callback) => {
+    onSessionCreatedRef.current = callback;
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -216,5 +228,6 @@ export function useOpenAIWebSocket(sessionId) {
     stopRecording,
     setOnTextResponse,
     setOnTranscript,
+    setOnSessionCreated,
   };
 }
