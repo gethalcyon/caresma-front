@@ -8,6 +8,7 @@ function Home() {
   const [userTranscript, setUserTranscript] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [cleanupStatus, setCleanupStatus] = useState('');
+  const [greetingDone, setGreetingDone] = useState(false);
 
   // Session ID - let backend generate the UUID
   const [sessionId, setSessionId] = useState('new');
@@ -60,6 +61,17 @@ function Home() {
     });
   }, [setOnSessionCreated]);
 
+  // Greet the user when avatar is ready
+  useEffect(() => {
+    if (avatarReady && connected && !greetingDone) {
+      const greetingText = 'Hello Christodoulos, how do you feel today?';
+      console.log('👋 Avatar greeting user:', greetingText);
+      setAiResponse(greetingText);
+      speak(greetingText);
+      setGreetingDone(true);
+    }
+  }, [avatarReady, connected, greetingDone, speak]);
+
   // Handle session start
   const handleStartSession = () => {
     setSessionStarted(true);
@@ -75,6 +87,7 @@ function Home() {
     setSessionStarted(false);
     setUserTranscript('');
     setAiResponse('');
+    setGreetingDone(false);
   };
 
   // Handle cleanup of all HeyGen sessions
@@ -191,7 +204,7 @@ function Home() {
                 )}
                 {!userTranscript && !aiResponse && (
                   <div className="empty-state">
-                    <p>Click "Start Microphone" and speak naturally.</p>
+                    <p>Click "Start Speaking" and speak naturally.</p>
                     <p style={{ fontSize: '14px', marginTop: '10px', color: '#999' }}>
                       The AI will automatically respond when you pause speaking.
                     </p>
@@ -216,9 +229,9 @@ function Home() {
               <button
                 className={`record-btn ${isRecording ? 'recording' : ''}`}
                 onClick={isRecording ? stopRecording : startRecording}
-                disabled={!connected || !avatarReady || avatarLoading}
+                disabled={!connected || !avatarReady || avatarLoading || !greetingDone || isSpeaking}
               >
-                {isRecording ? '🎤 Listening... (Click to stop)' : '🎤 Start Microphone'}
+                {isRecording ? '🎤 Listening... (Click to stop)' : '🎤 Start Speaking'}
               </button>
               <button
                 className="end-session-btn"
