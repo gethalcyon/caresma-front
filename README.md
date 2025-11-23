@@ -1,70 +1,191 @@
-# Getting Started with Create React App
+# Caresma Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React application for the Caresma cognitive health assessment platform. Features an AI-powered avatar for real-time voice conversations and cognitive assessment analysis.
+
+## Features
+
+- **AI Avatar Chat**: Real-time voice conversations with HeyGen streaming avatar
+- **Speech-to-Text**: OpenAI Realtime API for transcription
+- **Cognitive Assessments**: Upload transcripts for AI-powered analysis
+- **Assessment Reports**: Visual scores across Memory, Language, Executive Function, and Orientation
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         React Frontend                           │
+├─────────────────────────────────────────────────────────────────┤
+│  Pages                                                          │
+│  ├── Home.js           - Interactive avatar session             │
+│  └── AssessmentView.js - Transcript upload & analysis           │
+├─────────────────────────────────────────────────────────────────┤
+│  Hooks                                                          │
+│  ├── useOpenAIWebSocket.js - Audio streaming to backend         │
+│  └── useHeygenAvatar.js    - HeyGen avatar management           │
+├─────────────────────────────────────────────────────────────────┤
+│  Services                                                       │
+│  └── assessmentService.js  - Assessment API client              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Running backend server (see caresma-backend)
+- HeyGen API access (for avatar)
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+cd caresma-front
+npm install
+```
+
+### 2. Configure Environment
+
+Create a `.env` file in the project root:
+
+```env
+# Backend API URL
+REACT_APP_API_URL=http://localhost:8000/api/v1
+```
+
+### 3. Start Development Server
+
+```bash
+npm start
+```
+
+The app will be available at `http://localhost:3000`
+
+## Running the Full Application
+
+You need both the backend and frontend running:
+
+**Terminal 1 - Backend:**
+```bash
+cd caresma-backend
+source venv/bin/activate
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd caresma-front
+npm start
+```
+
+Then open `http://localhost:3000` in your browser.
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── Home.js              # Main interactive session page
+│   ├── AssessmentView.js    # Transcript upload page
+│   ├── AssessmentResults.js # Assessment results display
+│   ├── AssessmentView.css   # Assessment styles
+│   └── AssessmentResults.css
+├── hooks/
+│   ├── useOpenAIWebSocket.js # WebSocket for audio streaming
+│   └── useHeygenAvatar.js    # HeyGen avatar SDK integration
+├── services/
+│   └── assessmentService.js  # API client for assessments
+├── App.js                    # Router and navigation
+├── App.css                   # Global styles
+└── index.js                  # Entry point
+```
+
+## Pages
+
+### Home (`/`)
+Interactive session with AI avatar:
+- Click "Start Session" to initialize avatar
+- Wait for avatar greeting
+- Click "Start Speaking" to record audio
+- Avatar responds with AI-generated text via HeyGen TTS
+
+### Assessment (`/assessment`)
+Upload transcript for cognitive analysis:
+- Drag & drop or click to upload `.txt` or `.md` file
+- Optionally link to existing session ID
+- View detailed scores and feedback
+
+## Key Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `react` | UI framework |
+| `react-router-dom` | Client-side routing |
+| `@heygen/streaming-avatar` | HeyGen avatar SDK |
 
 ## Available Scripts
 
-In the project directory, you can run:
-
 ### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
 
 ### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Launches the test runner in interactive watch mode
 
 ### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Builds the app for production to the `build` folder
 
 ### `npm run eject`
+Ejects from Create React App (one-way operation)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## How It Works
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Voice Chat Flow
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+1. User clicks "Start Speaking"
+2. Browser captures microphone audio
+3. Audio converted to PCM16 @ 24kHz
+4. Sent via WebSocket to backend
+5. Backend forwards to OpenAI Realtime API
+6. OpenAI transcribes + generates response
+7. Backend sends text response to frontend
+8. Frontend calls avatar.speak(text)
+9. HeyGen renders avatar speaking
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Assessment Flow
 
-## Learn More
+```
+1. User uploads transcript file
+2. Frontend POSTs to /assessments/analyze-file
+3. Backend analyzes with GPT-4
+4. Returns scores for 4 cognitive domains
+5. Frontend displays visual report
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Browser Requirements
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Modern browser with WebSocket support
+- Microphone access (for voice chat)
+- WebRTC support (for HeyGen avatar video)
 
-### Code Splitting
+## Troubleshooting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Microphone not working
+- Ensure browser has microphone permissions
+- Check that no other app is using the microphone
+- Try a different browser (Chrome recommended)
 
-### Analyzing the Bundle Size
+### Avatar not loading
+- Check HeyGen API key is configured in backend
+- Verify backend is running and accessible
+- Check browser console for errors
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### WebSocket connection failed
+- Ensure backend is running on port 8000
+- Check CORS settings if using different ports
+- Verify `REACT_APP_API_URL` is correct
 
-### Making a Progressive Web App
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT
