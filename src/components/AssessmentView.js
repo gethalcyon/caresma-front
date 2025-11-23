@@ -109,22 +109,6 @@ function AssessmentView() {
         </p>
 
         <form onSubmit={handleSubmit} className="upload-form">
-          {/* Session ID (Optional) */}
-          <div className="form-group">
-            <label htmlFor="sessionId">
-              Session ID (Optional)
-              <span className="label-hint">Leave empty to auto-generate</span>
-            </label>
-            <input
-              type="text"
-              id="sessionId"
-              placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000"
-              value={sessionId}
-              onChange={(e) => setSessionId(e.target.value)}
-              className="session-input"
-            />
-          </div>
-
           {/* File Upload */}
           <div
             className={`file-upload-area ${dragActive ? 'drag-active' : ''} ${file ? 'has-file' : ''}`}
@@ -200,7 +184,7 @@ function AssessmentView() {
 
           {loading && (
             <p className="loading-note">
-              This may take 30-60 seconds. Please wait...
+              This may take 20-30 seconds. Please wait...
             </p>
           )}
         </form>
