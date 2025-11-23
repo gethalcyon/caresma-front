@@ -1,5 +1,5 @@
 import '../App.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useHeygenAvatar } from '../hooks/useHeygenAvatar';
 import { useOpenAIWebSocket } from '../hooks/useOpenAIWebSocket';
 
@@ -10,8 +10,9 @@ function Home() {
   const [cleanupStatus, setCleanupStatus] = useState('');
   const [greetingDone, setGreetingDone] = useState(false);
 
-  // Session ID - let backend generate the UUID
-  const [sessionId, setSessionId] = useState('new');
+  // Session ID - use ref to avoid re-renders when backend sends UUID
+  // The actual UUID is stored here for reference, but we always connect with "new"
+  const sessionIdRef = useRef(null);
 
   // Initialize HeyGen avatar only when session starts
   const {
@@ -34,7 +35,8 @@ function Home() {
     setOnTextResponse,
     setOnTranscript,
     setOnSessionCreated,
-  } = useOpenAIWebSocket(sessionStarted ? sessionId : null);
+  // Always connect with "new" - backend will generate and send UUID
+  } = useOpenAIWebSocket(sessionStarted ? 'new' : null);
 
   // Handle text responses from OpenAI -> Send to avatar
   useEffect(() => {
@@ -53,11 +55,11 @@ function Home() {
     });
   }, [setOnTranscript]);
 
-  // Handle session creation from backend
+  // Handle session creation from backend - store in ref (no re-render needed)
   useEffect(() => {
     setOnSessionCreated((newSessionId) => {
       console.log('🆔 Session ID received from backend:', newSessionId);
-      setSessionId(newSessionId);
+      sessionIdRef.current = newSessionId;
     });
   }, [setOnSessionCreated]);
 
@@ -88,6 +90,8 @@ function Home() {
     setUserTranscript('');
     setAiResponse('');
     setGreetingDone(false);
+    // Reset session ID for next session
+    sessionIdRef.current = null;
   };
 
   // Handle cleanup of all HeyGen sessions
@@ -253,7 +257,7 @@ function Home() {
         {/* Debug Info (remove in production) */}
         {process.env.NODE_ENV === 'development' && sessionStarted && (
           <div className="debug-info">
-            <p>Session ID: {sessionId}</p>
+            <p>Session ID: {sessionIdRef.current || 'pending...'}</p>
             <p>Avatar Ready: {avatarReady ? '✅' : '❌'}</p>
             <p>WebSocket Connected: {connected ? '✅' : '❌'}</p>
             <p>Is Speaking: {isSpeaking ? '✅' : '❌'}</p>

@@ -43,6 +43,7 @@ export function useHeygenAvatar(shouldInitialize = false) {
         if (cancelled) return;
 
         // 2. Create StreamingAvatar instance
+        // petran_15
         const avatar = new StreamingAvatar({ token });
         avatarRef.current = avatar;
 

@@ -117,6 +117,7 @@ function AssessmentView() {
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
+             {/* petran_17 */}
             <input
               type="file"
               id="file-input"
@@ -167,6 +168,7 @@ function AssessmentView() {
           )}
 
           {/* Submit Button */}
+          {/* petran_18 */}
           <button
             type="submit"
             className={`submit-btn ${loading ? 'loading' : ''}`}

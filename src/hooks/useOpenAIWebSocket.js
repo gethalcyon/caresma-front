@@ -19,15 +19,45 @@ export function useOpenAIWebSocket(sessionId) {
   const onTranscriptRef = useRef(null);
   const onSessionCreatedRef = useRef(null);
 
+  // Track connection state to handle React StrictMode double mounting
+  const isConnectingRef = useRef(false);
+  // Store the initial sessionId to prevent reconnection when it changes
+  const initialSessionIdRef = useRef(null);
+
   // Initialize WebSocket connection
   useEffect(() => {
     if (!sessionId) return;
 
-    const ws = new WebSocket(`ws://localhost:8000/api/v1/ws/session/${sessionId}`);
+    // Capture the initial sessionId and use it for the connection
+    // This prevents reconnection when sessionId changes from "new" to actual UUID
+    if (initialSessionIdRef.current === null) {
+      initialSessionIdRef.current = sessionId;
+    }
+    const connectionSessionId = initialSessionIdRef.current;
+
+    // Prevent double connection in React StrictMode
+    // Check if we already have an open/connecting WebSocket
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      console.log('⏭️ Skipping - WebSocket already open/connecting');
+      return;
+    }
+
+    // Also check if we're in the middle of connecting
+    if (isConnectingRef.current) {
+      console.log('⏭️ Skipping - connection already in progress');
+      return;
+    }
+
+    isConnectingRef.current = true;
+    console.log('🔌 Connecting WebSocket with session:', connectionSessionId);
+
+    // petran_12
+    const ws = new WebSocket(`ws://localhost:8000/api/v1/ws/session/${connectionSessionId}`);
     wsRef.current = ws;
 
     ws.onopen = () => {
       console.log('✅ WebSocket connected');
+      isConnectingRef.current = false;
       setConnected(true);
       setStatus('Connected');
     };
@@ -41,17 +71,19 @@ export function useOpenAIWebSocket(sessionId) {
         if (data.type === 'text_response') {
           // OpenAI generated text response - pass to avatar
           console.log('💬 AI Response:', data.text);
+          // petran_14
           onTextResponseRef.current?.(data.text);
         } else if (data.type === 'transcript') {
           // User input transcript - display in UI
           console.log('🎤 User said:', data.text);
+          // petran_14
           onTranscriptRef.current?.(data.text);
         } else if (data.type === 'recording_started') {
           setStatus('Recording...');
         } else if (data.type === 'recording_stopped') {
           setStatus('Processing...');
         } else if (data.type === 'session_created') {
-          // Backend generated a new session UUID
+          // Backend generated a new session UUID - just store it, don't reconnect
           console.log('🆔 Session created:', data.session_id);
           onSessionCreatedRef.current?.(data.session_id);
         } else if (data.type === 'error') {
@@ -65,17 +97,30 @@ export function useOpenAIWebSocket(sessionId) {
 
     ws.onerror = (error) => {
       console.error('❌ WebSocket error:', error);
+      isConnectingRef.current = false;
       setStatus('Connection error');
     };
 
     ws.onclose = () => {
       console.log('🔌 WebSocket disconnected');
+      isConnectingRef.current = false;
       setConnected(false);
       setStatus('Disconnected');
+      wsRef.current = null;
+      // Reset so we can reconnect for a new session
+      initialSessionIdRef.current = null;
     };
 
+    // Cleanup: only close if this specific ws instance is still the current one
     return () => {
-      ws.close();
+      // Don't close if a newer connection has replaced this one
+      if (wsRef.current === ws) {
+        console.log('🧹 Cleaning up WebSocket');
+        ws.close();
+        wsRef.current = null;
+        isConnectingRef.current = false;
+        initialSessionIdRef.current = null;
+      }
     };
   }, [sessionId]);
 
@@ -85,7 +130,7 @@ export function useOpenAIWebSocket(sessionId) {
   const startRecording = useCallback(async () => {
     try {
       console.log('🎤 Starting recording...');
-
+      // petran_11
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
@@ -128,6 +173,7 @@ export function useOpenAIWebSocket(sessionId) {
         }
 
         // Send PCM16 data to backend
+        // petran_13
         wsRef.current.send(pcm16.buffer);
 
         // Log every 50 chunks to avoid console spam
